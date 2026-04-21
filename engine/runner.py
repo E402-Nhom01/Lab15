@@ -39,6 +39,8 @@ class BenchmarkRunner:
                 "test_case": test_case["question"],
                 "agent_response": response["answer"],
                 "latency": latency,
+                "tokens_used": response.get("metadata", {}).get("tokens_used", 0),
+                "agent_version": response.get("metadata", {}).get("agent_version", "unknown"),
                 "ragas": ragas_scores,
                 "judge": judge_result,
                 "status": "fail" if judge_result["final_score"] < 3 else "pass"
