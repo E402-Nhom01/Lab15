@@ -1,18 +1,14 @@
 import asyncio
-import json
 import os
 import re
-import urllib.error
-import urllib.request
 from typing import Dict, Any, List
 from openai import AsyncOpenAI
 
 class LLMJudge:
-    def __init__(self, model_a: str = "gpt-4o", model_b: str = "gemini-2.5-flash"):
+    def __init__(self, model_a: str = "gpt-4o", model_b: str = "gpt-4o-mini"):
         self.model_a = model_a
         self.model_b = model_b
         self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
-        self.gemini_api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
         self.rubrics = {
             "accuracy": (
                 "Chấm 1-5 theo độ đúng so với ground truth: "
@@ -101,36 +97,6 @@ class LLMJudge:
         )
         return (response.output_text or "").strip()
 
-    async def _score_with_gemini(self, model_name: str, prompt: str) -> str:
-        if not self.gemini_api_key:
-            return ""
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={self.gemini_api_key}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": 0}
-        }
-        body = json.dumps(payload).encode("utf-8")
-        headers = {"Content-Type": "application/json"}
-
-        def _call_api() -> str:
-            request = urllib.request.Request(url, data=body, headers=headers, method="POST")
-            with urllib.request.urlopen(request, timeout=30) as response:
-                raw = response.read().decode("utf-8")
-                data = json.loads(raw)
-                candidates = data.get("candidates", [])
-                if not candidates:
-                    return ""
-                parts = candidates[0].get("content", {}).get("parts", [])
-                if not parts:
-                    return ""
-                return (parts[0].get("text") or "").strip()
-
-        try:
-            return await asyncio.to_thread(_call_api)
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError, KeyError, IndexError):
-            return ""
-
     async def _score_with_model(self, model_name: str, question: str, answer: str, ground_truth: str) -> int:
         """
         Gọi 1 model Judge, yêu cầu trả về duy nhất 1 số nguyên từ 1-5.
@@ -149,10 +115,7 @@ class LLMJudge:
         )
 
         try:
-            if model_name.startswith("gemini-"):
-                text = await self._score_with_gemini(model_name, prompt)
-            else:
-                text = await self._score_with_openai(model_name, prompt)
+            text = await self._score_with_openai(model_name, prompt)
             match = re.search(r"[1-5]", text)
             if match:
                 return int(match.group(0))
@@ -163,7 +126,7 @@ class LLMJudge:
 
     async def evaluate_multi_judge(self, question: str, answer: str, ground_truth: str) -> Dict[str, Any]:
         """
-        EXPERT TASK: Gọi ít nhất 2 model (ví dụ GPT-4o và Claude).
+        EXPERT TASK: Gọi ít nhất 2 model ChatGPT khác nhau (ví dụ GPT-4o và GPT-4o-mini).
         Tính toán sự sai lệch. Nếu lệch > 1 điểm, cần logic xử lý.
         """
         score_a, score_b = await asyncio.gather(
