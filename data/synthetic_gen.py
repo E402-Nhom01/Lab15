@@ -1,4 +1,4 @@
-﻿import json
+import json
 import asyncio
 import os
 from typing import List, Dict
@@ -50,7 +50,7 @@ async def generate_qa_from_text(chunks: List[Dict], num_pairs: int = 50) -> List
                     "question": "Nội dung câu hỏi",
                     "expected_answer": "Câu trả lời kỳ vọng",
                     "context": "Trích xuất một đoạn ngắn hoặc nội dung liên hệ từ tài liệu",
-                    "ground_truth_ids": ["Danh sách các Chunk ID chứa thông tin trả lời", "Nếu out-of-context thì mảng rỗng []"],
+                    "expected_retrieval_ids": ["Danh sách các Chunk ID chứa thông tin trả lời", "Nếu out-of-context thì mảng rỗng []"],
                     "metadata": {{
                         "difficulty": "hard/edge-case/adversarial",
                         "type": "loại câu hỏi (vd: out-of-context, prompt-injection, factual, ambiguous)"
