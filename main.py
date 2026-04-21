@@ -4,15 +4,36 @@ import os
 import time
 from engine.runner import BenchmarkRunner
 from agent.main_agent import MainAgent
+from engine.retrieval_eval import RetrievalEvaluator
 
 # Giả lập các components Expert
 class ExpertEvaluator:
+    def __init__(self):
+        self.retrieval_evaluator = RetrievalEvaluator()
+
     async def score(self, case, resp): 
-        # Giả lập tính toán Hit Rate và MRR
+        expected_ids = case.get("expected_retrieval_ids", [])
+        retrieved_ids = resp.get("metadata", {}).get("sources", [])
+        top_k = case.get("top_k", 3)
+
+        hit_rate = self.retrieval_evaluator.calculate_hit_rate(
+            expected_ids=expected_ids,
+            retrieved_ids=retrieved_ids,
+            top_k=top_k
+        )
+        mrr = self.retrieval_evaluator.calculate_mrr(
+            expected_ids=expected_ids,
+            retrieved_ids=retrieved_ids
+        )
+
         return {
             "faithfulness": 0.9, 
             "relevancy": 0.8,
-            "retrieval": {"hit_rate": 1.0, "mrr": 0.5}
+            "retrieval": {
+                "hit_rate": hit_rate,
+                "mrr": mrr,
+                "top_k": top_k
+            }
         }
 
 class MultiModelJudge:
@@ -46,6 +67,7 @@ async def run_benchmark_with_results(agent_version: str):
         "metrics": {
             "avg_score": sum(r["judge"]["final_score"] for r in results) / total,
             "hit_rate": sum(r["ragas"]["retrieval"]["hit_rate"] for r in results) / total,
+            "mrr": sum(r["ragas"]["retrieval"]["mrr"] for r in results) / total,
             "agreement_rate": sum(r["judge"]["agreement_rate"] for r in results) / total
         }
     }
