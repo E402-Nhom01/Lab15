@@ -3,6 +3,11 @@ import time
 from typing import List, Dict
 # Import other components...
 
+import logging
+
+# Thiết lập logging chi tiết để dễ debug
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+
 class BenchmarkRunner:
     def __init__(self, agent, evaluator, judge):
         self.agent = agent
@@ -11,30 +16,38 @@ class BenchmarkRunner:
 
     async def run_single_test(self, test_case: Dict) -> Dict:
         start_time = time.perf_counter()
-        
-        # 1. Gọi Agent
-        response = await self.agent.query(test_case["question"])
-        latency = time.perf_counter() - start_time
-        
-        # 2. Chạy RAGAS metrics
-        ragas_scores = await self.evaluator.score(test_case, response)
-        
-        # 3. Chạy Multi-Judge
-        judge_result = await self.judge.evaluate_multi_judge(
-            test_case["question"], 
-            response["answer"], 
-            test_case["expected_answer"]
-        )
-        
-        return {
-            "test_case": test_case["question"],
-            "agent_response": response["answer"],
-            "latency": latency,
-            "ragas": ragas_scores,
-            "judge": judge_result,
-            "status": "fail" if judge_result["final_score"] < 3 else "pass"
-        }
+        try:
+            # 1. Gọi Agent
+            response = await self.agent.query(test_case["question"])
+            latency = time.perf_counter() - start_time
+            logging.info(f"Agent response: {response}")
+            # Kiểm tra trường bắt buộc
+            if "answer" not in response:
+                logging.error("Agent response thiếu trường 'answer'")
+                return {"error": "Agent response thiếu trường 'answer'"}
+            # 2. Chạy RAGAS metrics
+            ragas_scores = await self.evaluator.score(test_case, response)
+            logging.info(f"RAGAS scores: {ragas_scores}")
+            # 3. Chạy Multi-Judge
+            judge_result = await self.judge.evaluate_multi_judge(
+                test_case["question"], 
+                response["answer"], 
+                test_case["expected_answer"]
+            )
+            logging.info(f"Judge result: {judge_result}")
+            return {
+                "test_case": test_case["question"],
+                "agent_response": response["answer"],
+                "latency": latency,
+                "ragas": ragas_scores,
+                "judge": judge_result,
+                "status": "fail" if judge_result["final_score"] < 3 else "pass"
+            }
+        except Exception as e:
+            logging.error(f"Lỗi khi chạy test case: {e}")
+            return {"error": str(e)}
 
+    # Chạy song song với batch_size để tránh Rate Limit
     async def run_all(self, dataset: List[Dict], batch_size: int = 5) -> List[Dict]:
         """
         Chạy song song bằng asyncio.gather với giới hạn batch_size để không bị Rate Limit.
