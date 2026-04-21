@@ -30,7 +30,7 @@ class MainAgent:
         self.version = version
         self.name = f"SimpleRAG-{version}"
 
-        self.retrieval_top_k = 3 if version == "v1" else 10
+        self.retrieval_top_k = 3 if version == "v1" else 5
         self.rerank_top_k = 0 if version == "v1" else 3
 
         pdf_path = Path(__file__).resolve().parents[1] / "data" / "sample.pdf"
@@ -44,6 +44,8 @@ class MainAgent:
                 self.rerank = CrossEncoderRerank(
                     model_name="cross-encoder/ms-marco-MiniLM-L-6-v2"
                 )
+                # Warm-up để query đầu tiên không phải chịu cost init lazy của model.
+                self.rerank.model.predict([["warmup", "warmup"]])
             except Exception as exc:
                 print(f"⚠️ Cannot initialize reranker, fallback to no-rerank: {exc}")
 

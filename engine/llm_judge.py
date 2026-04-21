@@ -8,7 +8,9 @@ class LLMJudge:
     def __init__(self, model_a: str = "gpt-4o", model_b: str = "gpt-4o-mini"):
         self.model_a = model_a
         self.model_b = model_b
-        self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
+        self.openai_client = AsyncOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"), timeout=30.0, max_retries=2
+        ) if os.getenv("OPENAI_API_KEY") else None
         self.rubrics = {
             "accuracy": (
                 "Chấm 1-5 theo độ đúng so với ground truth: "
@@ -90,10 +92,13 @@ class LLMJudge:
     async def _score_with_openai(self, model_name: str, prompt: str) -> str:
         if not self.openai_client:
             return ""
-        response = await self.openai_client.responses.create(
-            model=model_name,
-            input=prompt,
-            temperature=0
+        response = await asyncio.wait_for(
+            self.openai_client.responses.create(
+                model=model_name,
+                input=prompt,
+                temperature=0,
+            ),
+            timeout=30,
         )
         return (response.output_text or "").strip()
 

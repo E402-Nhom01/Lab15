@@ -17,8 +17,11 @@ class BenchmarkRunner:
     async def run_single_test(self, test_case: Dict) -> Dict:
         start_time = time.perf_counter()
         try:
-            # 1. Gọi Agent
-            response = await self.agent.query(test_case["question"])
+            # 1. Gọi Agent (timeout 60s để tránh treo cả batch)
+            response = await asyncio.wait_for(
+                self.agent.query(test_case["question"]),
+                timeout=60,
+            )
             latency = time.perf_counter() - start_time
             logging.info(f"Agent response: {response}")
             # Kiểm tra trường bắt buộc
@@ -28,11 +31,14 @@ class BenchmarkRunner:
             # 2. Chạy RAGAS metrics
             ragas_scores = await self.evaluator.score(test_case, response)
             logging.info(f"RAGAS scores: {ragas_scores}")
-            # 3. Chạy Multi-Judge
-            judge_result = await self.judge.evaluate_multi_judge(
-                test_case["question"], 
-                response["answer"], 
-                test_case["expected_answer"]
+            # 3. Chạy Multi-Judge (timeout 90s)
+            judge_result = await asyncio.wait_for(
+                self.judge.evaluate_multi_judge(
+                    test_case["question"],
+                    response["answer"],
+                    test_case["expected_answer"],
+                ),
+                timeout=90,
             )
             logging.info(f"Judge result: {judge_result}")
             return {
@@ -49,6 +55,9 @@ class BenchmarkRunner:
                 "judge": judge_result,
                 "status": "fail" if judge_result["final_score"] < 3 else "pass"
             }
+        except asyncio.TimeoutError:
+            logging.error(f"Timeout khi chạy test case: {test_case.get('question', '')[:80]}")
+            return {"error": "timeout"}
         except Exception as e:
             logging.error(f"Lỗi khi chạy test case: {e}")
             return {"error": str(e)}
