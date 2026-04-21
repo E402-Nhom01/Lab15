@@ -93,6 +93,55 @@ def _build_summary(agent_version: str, results: List[Dict]) -> Dict:
     }
 
 
+def _build_v1_v2_compare(v1_results: List[Dict], v2_results: List[Dict]) -> List[Dict]:
+    """Ghép kết quả V1/V2 theo question để phục vụ phân tích và báo cáo."""
+    v1_by_question = {
+        r.get("question"): r for r in v1_results
+        if "error" not in r and r.get("question")
+    }
+    v2_by_question = {
+        r.get("question"): r for r in v2_results
+        if "error" not in r and r.get("question")
+    }
+
+    merged: List[Dict] = []
+    for question in sorted(set(v1_by_question) & set(v2_by_question)):
+        r1 = v1_by_question[question]
+        r2 = v2_by_question[question]
+
+        merged.append(
+            {
+                "question": question,
+                "expected_answer": r2.get("expected_answer", r1.get("expected_answer", "")),
+                "ground_truth_chunk_ids": r2.get(
+                    "expected_retrieval_ids", r1.get("expected_retrieval_ids", [])
+                ),
+                "v1_answer": r1.get("agent_response", ""),
+                "v1_retrieved_chunk_ids": r1.get("retrieved_ids", []),
+                "v2_answer": r2.get("agent_response", ""),
+                "v2_retrieved_chunk_ids": r2.get("retrieved_ids", []),
+                "judge": {
+                    "v1_score": r1.get("judge", {}).get("final_score"),
+                    "v2_score": r2.get("judge", {}).get("final_score"),
+                    "v1_correct": r1.get("status") == "pass",
+                    "v2_correct": r2.get("status") == "pass",
+                    "hallucination_v1": (
+                        r1.get("judge", {}).get("faithfulness", 1.0) < 0.5
+                    ),
+                    "hallucination_v2": (
+                        r2.get("judge", {}).get("faithfulness", 1.0) < 0.5
+                    ),
+                    "winner": "v2"
+                    if (r2.get("judge", {}).get("final_score", 0)
+                        >= r1.get("judge", {}).get("final_score", 0))
+                    else "v1",
+                },
+                "latency_sec": {"v1": r1.get("latency"), "v2": r2.get("latency")},
+            }
+        )
+    return merged
+
+
 def apply_release_gate(
     v1_summary: Dict, v2_summary: Dict
 ) -> Tuple[bool, Dict, Dict]:
@@ -176,7 +225,7 @@ async def run_benchmark_with_results(
 
 async def main():
     # --- Chạy V1 (baseline) ---
-    _, v1_summary = await run_benchmark_with_results(
+    v1_results, v1_summary = await run_benchmark_with_results(
         agent=MainAgent(version="v1"),
         label="Agent_V1_Base",
     )
@@ -242,7 +291,14 @@ async def main():
     with open("reports/benchmark_results.json", "w", encoding="utf-8") as f:
         json.dump(v2_results, f, ensure_ascii=False, indent=2)
 
-    print("\n📁 Đã lưu: reports/summary.json  |  reports/benchmark_results.json")
+    compare_payload = _build_v1_v2_compare(v1_results, v2_results)
+    with open("reports/v1_v2_comparison.json", "w", encoding="utf-8") as f:
+        json.dump(compare_payload, f, ensure_ascii=False, indent=2)
+
+    print(
+        "\n📁 Đã lưu: reports/summary.json  |  reports/benchmark_results.json"
+        "  |  reports/v1_v2_comparison.json"
+    )
 
 
 if __name__ == "__main__":

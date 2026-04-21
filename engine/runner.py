@@ -37,7 +37,11 @@ class BenchmarkRunner:
             logging.info(f"Judge result: {judge_result}")
             return {
                 "test_case": test_case["question"],
+                "question": test_case["question"],
+                "expected_answer": test_case.get("expected_answer", ""),
+                "expected_retrieval_ids": test_case.get("expected_retrieval_ids", []),
                 "agent_response": response["answer"],
+                "retrieved_ids": response.get("metadata", {}).get("sources", []),
                 "latency": latency,
                 "tokens_used": response.get("metadata", {}).get("tokens_used", 0),
                 "agent_version": response.get("metadata", {}).get("agent_version", "unknown"),

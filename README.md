@@ -68,6 +68,9 @@ python main.py
 
 # 4. Kiểm tra định dạng trước khi nộp
 python check_lab.py
+
+# 5. Tính nhanh metrics V1 vs V2 (hit_rate / accuracy / hallucination_rate)
+python analysis/compute_quick_metrics.py
 ```
 
 ---
@@ -79,3 +82,89 @@ python check_lab.py
 
 ---
 *Chúc nhóm bạn xây dựng được một Evaluation Factory thực sự mạnh mẽ!*
+
+
+## ✅ Checklist Lab14 — Các bước cần làm theo hướng dẫn giáo viên
+**Mục tiêu cuối cùng:** Chứng minh bằng benchmark rằng **Version 2 tốt hơn Version 1**.
+
+### PHASE 1 — DATASET (Quan trọng nhất)
+1. **Chuẩn bị source data**
+   - Document gốc, knowledge base, vector DB (nếu có), chunk text, chunk ID.
+   - Nếu đã có vector DB: export chunk ra để đối chiếu ground truth.
+2. **Chunk dữ liệu**
+   - Mỗi chunk có: `chunk_id`, `chunk_text`, `source_document`.
+3. **Thiết kế prompt tạo dataset**
+   - Bắt buộc sinh: question, expected answer, correct chunk ID, difficulty, category, metadata.
+   - Bắt buộc có Good Example + Hard Case Example.
+4. **Sinh Golden Dataset bằng LLM**
+   - Mục tiêu 30–50 câu, gồm easy/medium/hard, multi-hop, retrieval dễ sai, hallucination dễ xảy ra.
+5. **Manual review dataset (bắt buộc)**
+   - Kiểm tra: question đúng, answer đúng, chunk ID đúng, source đúng.
+
+### PHASE 2 — AGENT VERSION
+6. **Version 1 (baseline)**
+   - Retrieval đơn giản (ví dụ BM25), logic cũ, prompt chưa tối ưu.
+7. **Version 2 (nâng cấp rõ ràng)**
+   - Retrieval tốt hơn + rerank + prompt tốt hơn + answer synthesis tốt hơn.
+   - Kỳ vọng: `V2 > V1`.
+
+### PHASE 3 — TRUST / JUDGE
+8. **Xây LLM Judge**
+   - Chấm: correct/incorrect, partial correct, hallucination, bias/fairness, consistency.
+9. **Verify Judge**
+   - Manual spot-check để tránh lỗi do chính Judge LLM.
+
+### PHASE 4 — BENCHMARK
+10. **Chạy benchmark cho V1** và lưu kết quả.
+11. **Chạy benchmark cho V2** trên cùng dataset để so sánh công bằng.
+12. **Tính metric**
+   - Retrieval Accuracy, Hit Rate, Avg Hit Rate, Final Answer Accuracy, Hallucination Rate, Avg Score, Latency, Cost, User Satisfaction.
+
+### PHASE 5 — ANALYSIS
+13. **Phân tích nguyên nhân**
+   - Không chỉ nói “V2 tốt hơn”, mà phải chỉ ra **tốt ở đâu, vì sao tốt hơn, rủi ro còn lại**.
+
+### PHASE 6 — REPORT
+14. **Final report**
+   - Executive Summary, Benchmark Comparison, Metric Table, Trust Analysis, Risk Analysis, Recommendation, Next Action.
+
+**Final Deliverable:** Dataset + Agent V1 + Agent V2 + LLM Judge + Benchmark Results + Final Report.
+
+---
+
+## ⚡ Minimal plan để pass nhanh (khi thiếu thời gian)
+1. **Dataset (1–2 giờ):** tạo 30 câu, manual fix 10 câu quan trọng.
+2. **V1 đơn giản:** BM25, `top_k=3`, không rerank.
+3. **V2 nâng cấp rõ:** `top_k=10`, rerank top 3, prompt tốt hơn.
+4. **Run benchmark** trên cùng dataset.
+5. **Tính metrics chính:** `hit_rate`, `accuracy`, `hallucination_rate`.
+6. **Viết analysis (rất quan trọng):** giải thích trade-off (quality ↑, latency/cost ↑ nhẹ nhưng chấp nhận được).
+
+### Logging format khuyến nghị cho mỗi sample
+```json
+{
+  "question": "...",
+  "expected_answer": "...",
+  "ground_truth_chunk_ids": ["chunk_001"],
+  "v1_answer": "...",
+  "v1_retrieved_chunk_ids": ["chunk_003", "chunk_001"],
+  "v2_answer": "...",
+  "v2_retrieved_chunk_ids": ["chunk_001", "chunk_010", "chunk_003"],
+  "judge": {
+    "winner": "v2",
+    "v1_correct": false,
+    "v2_correct": true,
+    "hallucination_v1": true,
+    "hallucination_v2": false,
+    "reason": "V2 bám đúng chunk ground truth và trả lời đầy đủ hơn"
+  },
+  "latency_ms": {"v1": 820, "v2": 1210},
+  "cost_usd": {"v1": 0.0019, "v2": 0.0034}
+}
+```
+
+### Analysis mẫu (ngắn gọn, đúng trọng tâm)
+- V2 cải thiện retrieval nên hit rate cao hơn.
+- Reranker giảm chunk nhiễu nên accuracy tăng.
+- Hallucination giảm nhờ prompt tốt hơn + context liên quan hơn.
+- Latency tăng nhẹ do top_k lớn hơn và thêm rerank, nhưng vẫn chấp nhận được.
