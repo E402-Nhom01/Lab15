@@ -1,4 +1,5 @@
 import json
+import math
 import asyncio
 import os
 from typing import List, Dict
@@ -8,26 +9,40 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-async def generate_qa_from_text(chunks: List[Dict], num_pairs: int = 50) -> List[Dict]:
-    """
-    Sử dụng OpenAI API để tạo các cặp QA từ các đoạn văn bản (chunks) cho trước,
-    dựa trên các chiến lược tạo Hard Cases. Bao gồm ground_truth_ids để đánh giá Retrieval.
-    """
-    print(f"Generating {num_pairs} QA pairs from {len(chunks)} chunks...")
-    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    
-    # Gộp các chunk để đưa vào prompt theo định dạng có ID
-    context_str = "\n\n".join([f"[Chunk ID: {c['chunk_id']}]\n{c['text']}" for c in chunks])
-    # Giới hạn tránh token limit
-    context_str = context_str[:30000]
+# Cap ký tự cho context mỗi batch. GPT-4o chịu được 128k token, 60k chars rất an toàn.
+PER_BATCH_CHAR_CAP = 60000
 
-    all_qa_pairs = []
+
+async def generate_qa_from_text(
+    chunks: List[Dict], num_pairs: int = 50, source_label: str = ""
+) -> List[Dict]:
+    """
+    Sinh QA từ chunks của MỘT file. Mỗi batch sample một dải chunk khác nhau
+    để đảm bảo QA phủ đều các phần trong tài liệu (không chỉ phần đầu).
+    """
+    if num_pairs <= 0 or not chunks:
+        return []
+    tag = f"[{source_label}] " if source_label else ""
+    print(f"{tag}Generating {num_pairs} QA pairs from {len(chunks)} chunks...")
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+    all_qa_pairs: List[Dict] = []
     batch_size = 10
     num_batches = (num_pairs + batch_size - 1) // batch_size
-    
+    # Chia chunks thành num_batches dải liên tiếp -> mỗi batch QA nhìn vào phần khác nhau của PDF
+    chunks_per_slice = max(1, math.ceil(len(chunks) / num_batches))
+
     for i in range(num_batches):
         current_batch_size = min(batch_size, num_pairs - i * batch_size)
-        print(f"Generating batch {i+1}/{num_batches} ({current_batch_size} pairs)...")
+        slice_chunks = chunks[i * chunks_per_slice : (i + 1) * chunks_per_slice] or chunks
+        context_str = "\n\n".join(
+            f"[Chunk ID: {c['chunk_id']}]\n{c['text']}" for c in slice_chunks
+        )
+        context_str = context_str[:PER_BATCH_CHAR_CAP]
+        print(
+            f"{tag}Batch {i+1}/{num_batches}: {current_batch_size} pairs "
+            f"from chunks [{i*chunks_per_slice}:{i*chunks_per_slice + len(slice_chunks)}]"
+        )
         prompt = f"""
         Bạn là một chuyên gia đánh giá và kiểm thử AI (AI Evaluation Expert).
         Dựa vào tập hợp các đoạn tài liệu có kèm [Chunk ID] dưới đây, hãy tạo ra đúng {current_batch_size} test case 
@@ -81,16 +96,18 @@ async def generate_qa_from_text(chunks: List[Dict], num_pairs: int = 50) -> List
     return all_qa_pairs
 
 def extract_chunks_from_pdf(pdf_path: str) -> List[Dict]:
-    """Đọc dữ liệu từ file PDF và chia thành các chunk (theo trang)"""
+    """Đọc dữ liệu từ file PDF và chia thành các chunk (theo trang).
+    chunk_id = "{filename_stem}_page_{N}" để không đụng ID giữa các file.
+    """
     chunks = []
     try:
+        stem = os.path.splitext(os.path.basename(pdf_path))[0]
         reader = PdfReader(pdf_path)
         for i, page in enumerate(reader.pages):
             text = page.extract_text()
             if text and text.strip():
-                # Gắn chunk_id cho mỗi trang (cách đơn giản nhất)
                 chunks.append({
-                    "chunk_id": f"page_{i+1}",
+                    "chunk_id": f"{stem}_page_{i+1}",
                     "text": text.strip()
                 })
         return chunks
@@ -98,24 +115,73 @@ def extract_chunks_from_pdf(pdf_path: str) -> List[Dict]:
         print(f"Lỗi khi đọc file PDF: {e}")
         return chunks
 
+def allocate_quotas(sizes: List[int], total: int, floor: int = 5) -> List[int]:
+    """Phân bổ quota QA cho từng PDF: mỗi PDF tối thiểu `floor`, phần còn lại chia theo số chunk.
+    Giúp file nhỏ (vd. 5 trang) vẫn có đủ case để đánh giá, file lớn vẫn được phủ nhiều hơn.
+    """
+    n = len(sizes)
+    if n == 0:
+        return []
+    if floor * n >= total:
+        # Không đủ chỗ để chia theo tỉ lệ, chỉ cấp floor cho đến hết quota
+        quotas = [0] * n
+        remaining = total
+        for i in range(n):
+            take = min(floor, remaining)
+            quotas[i] = take
+            remaining -= take
+        return quotas
+
+    quotas = [floor] * n
+    remaining = total - floor * n
+    sum_size = sum(sizes) or 1
+    for i in range(n):
+        quotas[i] += round(remaining * sizes[i] / sum_size)
+    # Bù sai lệch do làm tròn vào quota lớn nhất
+    drift = total - sum(quotas)
+    if drift != 0:
+        idx = max(range(n), key=lambda k: sizes[k])
+        quotas[idx] += drift
+    return quotas
+
+
 async def main():
-    pdf_path = "C:\\assignments-main\\Lab14 nop\\Lab14-AI-Evaluation-Benchmarking\\sample.pdf" # Đường dẫn tới sample.pdf (so với thư mục data/)
-    print(f"Reading text from {pdf_path}...")
-    chunks = extract_chunks_from_pdf(pdf_path)
-    
-    if not chunks:
-        print("Không có nội dung trong file PDF hoặc đọc file thất bại. Vui lòng kiểm tra lại.")
+    data_dir = os.path.dirname(os.path.abspath(__file__))
+    pdf_files = [
+        "2026_03_03_FUV-Academic-Catalog-2025-2026.pdf",
+        "Academic-Policy_Final_V4.0.pdf",
+        "FAApp_Document-Required_Final.pdf",
+    ]
+
+    chunks_by_pdf: List[tuple] = []
+    for name in pdf_files:
+        pdf_path = os.path.join(data_dir, name)
+        print(f"Reading text from {pdf_path}...")
+        c = extract_chunks_from_pdf(pdf_path)
+        chunks_by_pdf.append((name, c))
+
+    if not any(c for _, c in chunks_by_pdf):
+        print("Không có nội dung trong file PDF nào. Vui lòng kiểm tra lại.")
         return
 
-    # Tạo 50 test case
-    qa_pairs = await generate_qa_from_text(chunks, num_pairs=50)
-    
-    if qa_pairs:
-        output_file = "golden_set.jsonl" # Vì file chạy trong folder data, lưu trực tiếp
+    total_pairs = 50
+    sizes = [len(c) for _, c in chunks_by_pdf]
+    quotas = allocate_quotas(sizes, total_pairs, floor=5)
+    print("Quota QA mỗi PDF:")
+    for (name, _), q in zip(chunks_by_pdf, quotas):
+        print(f"  - {name}: {q}")
+
+    all_qa: List[Dict] = []
+    for (name, chunks), quota in zip(chunks_by_pdf, quotas):
+        pairs = await generate_qa_from_text(chunks, num_pairs=quota, source_label=name)
+        all_qa.extend(pairs)
+
+    if all_qa:
+        output_file = os.path.join(data_dir, "golden_set.jsonl")
         with open(output_file, "w", encoding="utf-8") as f:
-            for pair in qa_pairs:
+            for pair in all_qa:
                 f.write(json.dumps(pair, ensure_ascii=False) + "\n")
-        print(f"Done! Saved {len(qa_pairs)} test cases to data/{output_file}")
+        print(f"Done! Saved {len(all_qa)} test cases to {output_file}")
     else:
         print("Không tạo được test cases nào.")
 

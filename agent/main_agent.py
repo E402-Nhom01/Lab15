@@ -3,9 +3,16 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, Iterable, List
 
 from pypdf import PdfReader
+
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+SOURCE_PDFS = [
+    DATA_DIR / "2026_03_03_FUV-Academic-Catalog-2025-2026.pdf",
+    DATA_DIR / "Academic-Policy_Final_V4.0.pdf",
+    DATA_DIR / "FAApp_Document-Required_Final.pdf",
+]
 
 # Load real RAG modules from simple-rag package in this repository.
 SIMPLE_RAG_ROOT = Path(__file__).resolve().parent / "simple-rag"
@@ -33,8 +40,7 @@ class MainAgent:
         self.retrieval_top_k = 3 if version == "v1" else 5
         self.rerank_top_k = 0 if version == "v1" else 3
 
-        pdf_path = Path(__file__).resolve().parents[1] / "data" / "sample.pdf"
-        chunks = self._build_page_chunks(pdf_path)
+        chunks = self._build_page_chunks(SOURCE_PDFS)
         self.retrieval = BM25Retrieval(documents=chunks)
         self.llm = GPT4oMiniLLM(model_name="gpt-4o-mini")
 
@@ -49,26 +55,29 @@ class MainAgent:
             except Exception as exc:
                 print(f"⚠️ Cannot initialize reranker, fallback to no-rerank: {exc}")
 
-    def _build_page_chunks(self, pdf_path: Path) -> List[Dict]:
-        if not pdf_path.exists():
-            raise FileNotFoundError(f"Missing source PDF: {pdf_path}")
-
-        reader = PdfReader(str(pdf_path))
+    def _build_page_chunks(self, pdf_paths: Iterable[Path]) -> List[Dict]:
         chunks: List[Dict] = []
-        for i, page in enumerate(reader.pages, start=1):
-            text = (page.extract_text() or "").strip()
-            if not text:
-                continue
-            chunks.append(
-                {
-                    "chunk_id": f"page_{i}",
-                    "chunk_text": text,
-                    "source_document": pdf_path.name,
-                }
-            )
+        for pdf_path in pdf_paths:
+            if not pdf_path.exists():
+                raise FileNotFoundError(f"Missing source PDF: {pdf_path}")
+
+            reader = PdfReader(str(pdf_path))
+            for i, page in enumerate(reader.pages, start=1):
+                text = (page.extract_text() or "").strip()
+                if not text:
+                    continue
+                chunks.append(
+                    {
+                        "chunk_id": f"{pdf_path.stem}_page_{i}",
+                        "chunk_text": text,
+                        "source_document": pdf_path.name,
+                    }
+                )
 
         if not chunks:
-            raise ValueError(f"No text extracted from PDF: {pdf_path}")
+            raise ValueError(
+                f"No text extracted from any PDF in: {[str(p) for p in pdf_paths]}"
+            )
         return chunks
 
     def _run_sync(self, question: str) -> Dict:

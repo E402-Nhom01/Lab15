@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University Admission &amp; Student Support Agent — Nhóm 1, E402</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0B1220;
+      --ink-2: #111A2E;
+      --paper: #F5F1E8;
+      --paper-2: #ECE5D3;
+      --cream: #FAF6EC;
+      --rule: #1B253C;
+      --muted: #5B6578;
+      --amber: #D97706;
+      --amber-2: #B45309;
+      --terracotta: #C2410C;
+      --forest: #166534;
+      --wine: #7F1D1D;
+      --sky: #1E3A5F;
+      --line: rgba(27, 37, 60, .12);
+      --line-dk: rgba(245, 241, 232, .14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+      background: #0A0F1C;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Deck */
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .5s ease, visibility .5s;
+      overflow: hidden;
+    }
+
+    .slide.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .slide.is-active .reveal {
+      animation: reveal .9s cubic-bezier(.2, .7, .2, 1) both;
+    }
+
+    .slide.is-active .reveal-2 {
+      animation: reveal .9s cubic-bezier(.2, .7, .2, 1) .15s both;
+    }
+
+    .slide.is-active .reveal-3 {
+      animation: reveal .9s cubic-bezier(.2, .7, .2, 1) .3s both;
+    }
+
+    .slide.is-active .reveal-4 {
+      animation: reveal .9s cubic-bezier(.2, .7, .2, 1) .45s both;
+    }
+
+    .slide.is-active .reveal-5 {
+      animation: reveal .9s cubic-bezier(.2, .7, .2, 1) .6s both;
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Theme variants */
+    .bg-ink {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .bg-paper {
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .bg-cream {
+      background: var(--cream);
+      color: var(--ink);
+    }
+
+    /* Noise overlay */
+    .bg-ink::after,
+    .bg-paper::after,
+    .bg-cream::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .04;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+
+    /* Common frame */
+    .frame {
+      position: absolute;
+      inset: 40px;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 18px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .bg-ink .topbar {
+      border-bottom-color: var(--line-dk);
+      color: rgba(245, 241, 232, .6);
+    }
+
+    .bg-paper .topbar,
+    .bg-cream .topbar {
+      color: var(--muted);
+    }
+
+    .topbar .brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .topbar .brand .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--amber);
+      border-radius: 50%;
+    }
+
+    .footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .bg-ink .footer {
+      border-top-color: var(--line-dk);
+      color: rgba(245, 241, 232, .55);
+    }
+
+    .bg-paper .footer,
+    .bg-cream .footer {
+      color: var(--muted);
+    }
+
+    /* Typography */
+    .display {
+      font-family: 'Fraunces', serif;
+      font-weight: 400;
+      font-variation-settings: "opsz" 144, "SOFT" 50;
+      letter-spacing: -.02em;
+      line-height: .98;
+    }
+
+    .display em {
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .serif-italic {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+
+    .bg-ink .eyebrow {
+      color: #F59E0B;
+    }
+
+    .section-num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 17px;
+      color: var(--amber);
+      margin-right: .6em;
+    }
+
+    h1.kicker {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: clamp(44px, 5.4vw, 88px);
+      line-height: .95;
+      letter-spacing: -.025em;
+      font-variation-settings: "opsz" 144;
+    }
+
+    h2.section-title {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: clamp(40px, 4.6vw, 72px);
+      line-height: 1;
+      letter-spacing: -.02em;
+      font-variation-settings: "opsz" 144;
+    }
+
+    h3.card-title {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      font-weight: 600;
+      font-size: clamp(15px, 1.1vw, 19px);
+      letter-spacing: -.005em;
+      line-height: 1.25;
+    }
+
+    p.lead {
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      font-size: clamp(17px, 1.4vw, 24px);
+      line-height: 1.4;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .bg-ink p.lead {
+      color: rgba(245, 241, 232, .72);
+    }
+
+    p.body,
+    li {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      font-weight: 400;
+      font-size: clamp(12px, .95vw, 15px);
+      line-height: 1.55;
+    }
+
+    .txt-muted {
+      color: var(--muted);
+    }
+
+    .bg-ink .txt-muted {
+      color: rgba(245, 241, 232, .6);
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+
+    /* =============== SLIDE 0: COVER =============== */
+    .cover-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 60px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .cover-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-right: 30px;
+    }
+
+    .cover-right {
+      position: relative;
+      border-left: 1px solid var(--line-dk);
+      padding-left: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .cover-hero {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: clamp(54px, 6.6vw, 108px);
+      line-height: .95;
+      letter-spacing: -.028em;
+      font-variation-settings: "opsz" 144, "SOFT" 30;
+    }
+
+    .cover-hero em {
+      font-style: italic;
+      font-weight: 300;
+      color: #F59E0B;
+    }
+
+    .cover-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--amber);
+      margin: 0 .15em .08em .08em;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 60px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .meta-block .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(245, 241, 232, .5);
+      margin-bottom: 8px;
+    }
+
+    .meta-block .val {
+      font-family: 'Fraunces', serif;
+      font-weight: 400;
+      font-size: 17px;
+      color: var(--paper);
+    }
+
+    .cover-team {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 130px 1fr auto;
+      gap: 24px;
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(245, 241, 232, .15);
+      align-items: baseline;
+    }
+
+    .team-row:last-child {
+      border-bottom: none;
+    }
+
+    .team-role {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #F59E0B;
+    }
+
+    .team-name {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    .team-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: rgba(245, 241, 232, .45);
+    }
+
+    /* =============== SLIDE: project-user-problem =============== */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .persona-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      margin-top: 30px;
+    }
+
+    .persona {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 22px;
+      align-items: start;
+      padding: 20px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .bg-ink .persona {
+      border-top-color: var(--line-dk);
+    }
+
+    .persona:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bg-ink .persona:last-child {
+      border-bottom-color: var(--line-dk);
+    }
+
+    .persona-num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 44px;
+      line-height: .9;
+      color: var(--amber);
+    }
+
+    .persona-body h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 24px;
+      letter-spacing: -.01em;
+      margin-bottom: 6px;
+    }
+
+    .persona-body p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .bg-ink .persona-body p {
+      color: rgba(245, 241, 232, .68);
+    }
+
+    .problem-card {
+      background: var(--ink-2);
+      color: var(--paper);
+      padding: 36px 36px 32px;
+      border-radius: 2px;
+      margin-top: auto;
+      border-left: 3px solid var(--amber);
+    }
+
+    .bg-ink .problem-card {
+      background: rgba(245, 241, 232, .06);
+      border-left-color: #F59E0B;
+    }
+
+    .problem-card .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: #F59E0B;
+      margin-bottom: 14px;
+    }
+
+    .problem-card .prompt {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    /* =============== SLIDE: enterprise context =============== */
+    .constraints {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .constraint {
+      background: var(--paper-2);
+      padding: 28px 24px 24px;
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      min-height: 260px;
+    }
+
+    .bg-ink .constraint {
+      background: rgba(245, 241, 232, .055);
+    }
+
+    .constraint .idx {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 54px;
+      line-height: .9;
+      color: var(--amber);
+      margin-bottom: -6px;
+    }
+
+    .constraint h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: -.008em;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .constraint p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .bg-ink .constraint p {
+      color: rgba(245, 241, 232, .7);
+    }
+
+    .constraint .pill {
+      align-self: flex-start;
+      margin-top: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 99px;
+    }
+
+    .bg-ink .constraint .pill {
+      background: var(--amber);
+      color: var(--ink);
+    }
+
+    .choice-row {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 50px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .bg-ink .choice-row {
+      border-top-color: var(--line-dk);
+    }
+
+    .choice-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .choice-head {
+      font-family: 'Fraunces', serif;
+      font-size: 36px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -.01em;
+    }
+
+    .choice-head em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--amber);
+    }
+
+    /* =============== SLIDE: architecture =============== */
+    .arch-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .arch-canvas {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      padding: 36px 20px 10px;
+    }
+
+    .ui-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .ui-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 14px 16px;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+
+    .bg-ink .ui-card {
+      background: rgba(245, 241, 232, .07);
+      border-color: var(--line-dk);
+      color: var(--paper);
+    }
+
+    .ui-card .ui-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+
+    .ui-card h4 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 18px;
+    }
+
+    .ui-card p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .bg-ink .ui-card p {
+      color: rgba(245, 241, 232, .6);
+    }
+
+    .connectors {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      height: 40px;
+    }
+
+    .connectors span {
+      border-left: 1px dashed rgba(27, 37, 60, .3);
+      margin-left: 50%;
+      height: 100%;
+      display: block;
+    }
+
+    .bg-ink .connectors span {
+      border-left-color: rgba(245, 241, 232, .22);
+    }
+
+    .ai-core {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 22px 28px;
+      border-radius: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+      border: 1px solid var(--amber);
+      position: relative;
+    }
+
+    .bg-ink .ai-core {
+      background: rgba(217, 119, 6, .14);
+      border: 1px solid #F59E0B;
+    }
+
+    .ai-core .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: #F59E0B;
+      margin-bottom: 6px;
+    }
+
+    .ai-core h4 {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -.01em;
+    }
+
+    .ai-core .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border: 1px solid rgba(245, 241, 232, .35);
+      border-radius: 99px;
+      color: var(--paper);
+    }
+
+    .chip.primary {
+      background: #F59E0B;
+      color: var(--ink);
+      border-color: #F59E0B;
+    }
+
+    .chip.local {
+      background: #5FB88F;
+      color: #0A1628;
+      border-color: #5FB88F;
+      font-weight: 500;
+    }
+
+    /* =============== SLIDE: 4-tier local routing =============== */
+    .tier-row {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr 1fr;
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .tier {
+      background: var(--paper-2);
+      padding: 22px 20px 20px;
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 2px solid var(--muted);
+      min-height: 290px;
+      position: relative;
+    }
+
+    .tier.tier-local {
+      border-top-color: var(--forest);
+      background: #E8E5D0;
+    }
+
+    .bg-ink .tier {
+      background: rgba(245, 241, 232, .055);
+    }
+
+    .bg-ink .tier.tier-local {
+      background: rgba(95, 184, 143, .12);
+    }
+
+    .tier-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .tier.tier-local .tier-badge {
+      color: var(--forest);
+      font-weight: 500;
+    }
+
+    .bg-ink .tier.tier-local .tier-badge {
+      color: #86EFAC;
+    }
+
+    .tier h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 19px;
+      letter-spacing: -.008em;
+      line-height: 1.18;
+    }
+
+    .tier h3 em {
+      font-style: italic;
+      color: var(--muted);
+      font-weight: 300;
+      display: block;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .bg-ink .tier h3 em {
+      color: rgba(245, 241, 232, .55);
+    }
+
+    .tier-traffic {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--amber);
+      letter-spacing: .08em;
+    }
+
+    .tier.tier-local .tier-traffic {
+      color: var(--forest);
+    }
+
+    .bg-ink .tier.tier-local .tier-traffic {
+      color: #86EFAC;
+    }
+
+    .tier ul {
+      list-style: none;
+      font-size: 11.5px;
+      line-height: 1.5;
+      flex: 1;
+      margin-top: 2px;
+    }
+
+    .tier li {
+      padding-left: 12px;
+      position: relative;
+      color: var(--muted);
+      margin: 3px 0;
+    }
+
+    .bg-ink .tier li {
+      color: rgba(245, 241, 232, .7);
+    }
+
+    .tier li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 1px;
+      background: var(--amber);
+    }
+
+    .tier.tier-local li::before {
+      background: var(--forest);
+    }
+
+    .bg-ink .tier.tier-local li::before {
+      background: #86EFAC;
+    }
+
+    .tier-cost {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink);
+      padding: 8px 10px;
+      background: rgba(11, 18, 32, .07);
+      border-radius: 1px;
+      text-align: center;
+      letter-spacing: .04em;
+    }
+
+    .bg-ink .tier-cost {
+      background: rgba(245, 241, 232, .1);
+      color: var(--paper);
+    }
+
+    .tier.tier-local .tier-cost {
+      background: rgba(22, 101, 52, .14);
+      color: var(--forest);
+      font-weight: 500;
+    }
+
+    .bg-ink .tier.tier-local .tier-cost {
+      background: rgba(134, 239, 172, .15);
+      color: #86EFAC;
+    }
+
+    .local-reasons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .bg-ink .local-reasons {
+      border-top-color: var(--line-dk);
+    }
+
+    .reason {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .reason-num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 40px;
+      line-height: .9;
+      color: var(--forest);
+      margin-bottom: 2px;
+    }
+
+    .reason h4 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 20px;
+      letter-spacing: -.008em;
+    }
+
+    .reason p {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .bg-ink .reason p {
+      color: rgba(245, 241, 232, .7);
+    }
+
+    .data-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      padding-top: 18px;
+      border-top: 1px dashed rgba(27, 37, 60, .2);
+    }
+
+    .bg-ink .data-row {
+      border-top-color: rgba(245, 241, 232, .2);
+    }
+
+    .data-row h5 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .data-row h5 em {
+      font-style: italic;
+      color: var(--amber);
+      font-weight: 300;
+    }
+
+    .data-row p {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .bg-ink .data-row p {
+      color: rgba(245, 241, 232, .6);
+    }
+
+    /* =============== SLIDE: cost anatomy =============== */
+    .cost-split {
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      gap: 60px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .cost-hero-num {
+      font-family: 'Fraunces', serif;
+      font-weight: 400;
+      font-size: clamp(80px, 8.5vw, 148px);
+      line-height: .88;
+      letter-spacing: -.035em;
+      font-variation-settings: "opsz" 144;
+    }
+
+    .cost-hero-num em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--amber);
+    }
+
+    .cost-hero-num .unit {
+      font-size: .34em;
+      color: var(--muted);
+      font-weight: 400;
+      font-style: normal;
+      margin-left: .1em;
+      letter-spacing: 0;
+    }
+
+    .cost-range {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      letter-spacing: .08em;
+      color: var(--amber);
+      margin-top: 16px;
+    }
+
+    .insight-card {
+      margin-top: 28px;
+      padding: 22px 24px;
+      background: var(--ink);
+      color: var(--paper);
+      border-left: 3px solid var(--amber);
+    }
+
+    .bg-ink .insight-card {
+      background: rgba(217, 119, 6, .12);
+    }
+
+    .insight-card .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: #F59E0B;
+      margin-bottom: 10px;
+    }
+
+    .insight-card h4 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 20px;
+      line-height: 1.3;
+    }
+
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .bar-chart h4 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bar-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .bar-head .name {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .bar-head .name em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--muted);
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    .bar-head .cost {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .bar-track {
+      height: 10px;
+      background: rgba(27, 37, 60, .08);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    .bg-ink .bar-track {
+      background: rgba(245, 241, 232, .1);
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--amber), var(--terracotta));
+    }
+
+    .bar-fill.mini {
+      background: linear-gradient(90deg, var(--sky), #3B5C82);
+    }
+
+    .bar-fill.fallback {
+      background: linear-gradient(90deg, var(--muted), #8B95A7);
+    }
+
+    .breakdown-table {
+      margin-top: 24px;
+      width: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+
+    .breakdown-table th,
+    .breakdown-table td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bg-ink .breakdown-table th,
+    .bg-ink .breakdown-table td {
+      border-bottom-color: var(--line-dk);
+    }
+
+    .breakdown-table th {
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .breakdown-table .amount {
+      text-align: right;
+      color: var(--amber);
+    }
+
+    /* =============== SLIDE: cost optimization =============== */
+    .strategies {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      flex: 1;
+      align-items: stretch;
+      margin-top: 24px;
+    }
+
+    .strategy {
+      position: relative;
+      padding: 32px 26px 26px;
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: var(--cream);
+      border-top: 3px solid var(--amber);
+    }
+
+    .bg-ink .strategy {
+      background: rgba(245, 241, 232, .06);
+    }
+
+    .strategy.p0 {
+      border-top-color: var(--amber);
+    }
+
+    .strategy.p1 {
+      border-top-color: var(--sky);
+    }
+
+    .bg-ink .strategy.p1 {
+      border-top-color: #6FA8DC;
+    }
+
+    .strategy .prio {
+      position: absolute;
+      top: -13px;
+      left: 26px;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .2em;
+      padding: 5px 12px;
+      text-transform: uppercase;
+    }
+
+    .strategy.p1 .prio {
+      background: var(--sky);
+    }
+
+    .strategy h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: -.008em;
+    }
+
+    .strategy h3 em {
+      font-style: italic;
+      color: var(--amber);
+      font-weight: 300;
+      display: block;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .strategy .savings {
+      padding: 10px 14px;
+      background: var(--ink);
+      color: #F59E0B;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      letter-spacing: .04em;
+    }
+
+    .bg-ink .strategy .savings {
+      background: rgba(0, 0, 0, .3);
+    }
+
+    .strategy p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .bg-ink .strategy p {
+      color: rgba(245, 241, 232, .68);
+    }
+
+    .strategy .owner {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .bg-ink .strategy .owner {
+      color: rgba(245, 241, 232, .5);
+    }
+
+    .savings-total {
+      margin-top: 28px;
+      padding: 24px 28px;
+      background: var(--ink);
+      color: var(--paper);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+      border-left: 3px solid var(--amber);
+    }
+
+    .bg-ink .savings-total {
+      background: rgba(217, 119, 6, .14);
+    }
+
+    .savings-total .lead {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--paper);
+    }
+
+    .savings-total .big {
+      font-family: 'Fraunces', serif;
+      font-size: 40px;
+      font-weight: 500;
+      letter-spacing: -.01em;
+      color: #F59E0B;
+    }
+
+    .savings-total .big em {
+      font-style: italic;
+      font-weight: 300;
+      font-size: .6em;
+      color: rgba(245, 241, 232, .7);
+      margin-left: 10px;
+    }
+
+    /* =============== SLIDE: reliability =============== */
+    .incidents {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      flex: 1;
+      margin-top: 30px;
+    }
+
+    .incident {
+      display: flex;
+      flex-direction: column;
+      background: var(--paper-2);
+      padding: 28px 24px;
+      border-radius: 2px;
+    }
+
+    .bg-ink .incident {
+      background: rgba(245, 241, 232, .055);
+    }
+
+    .incident .case-num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+
+    .incident h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: -.008em;
+      line-height: 1.15;
+      margin-bottom: 18px;
+    }
+
+    .incident-section {
+      margin-bottom: 14px;
+    }
+
+    .incident-section .k {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .bg-ink .incident-section .k {
+      color: rgba(245, 241, 232, .55);
+    }
+
+    .incident-section .v {
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .incident .metric-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .metric-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: .06em;
+      padding: 3px 9px;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 99px;
+    }
+
+    .bg-ink .metric-pill {
+      background: rgba(245, 241, 232, .15);
+      color: var(--paper);
+    }
+
+    /* =============== SLIDE: roadmap / team =============== */
+    .roadmap {
+      flex: 1;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 22px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      position: relative;
+      margin-top: 14px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 32px;
+      left: 14px;
+      right: 14px;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .bg-ink .timeline::before {
+      background: var(--line-dk);
+    }
+
+    .tl-step {
+      padding: 0 14px;
+      position: relative;
+    }
+
+    .tl-step .node {
+      position: relative;
+      z-index: 2;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--paper);
+      border: 2px solid var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--amber);
+      margin: 22px 0 16px;
+    }
+
+    .bg-ink .tl-step .node {
+      background: var(--ink);
+    }
+
+    .tl-step.done .node {
+      background: var(--amber);
+      color: var(--ink);
+    }
+
+    .tl-step .when {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+
+    .tl-step h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 22px;
+      line-height: 1.15;
+      letter-spacing: -.008em;
+      margin-bottom: 10px;
+    }
+
+    .tl-step ul {
+      list-style: none;
+    }
+
+    .tl-step li {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--muted);
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .bg-ink .tl-step li {
+      color: rgba(245, 241, 232, .7);
+    }
+
+    .tl-step li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 7px;
+      height: 1px;
+      background: var(--amber);
+    }
+
+    .team-matrix {
+      display: grid;
+      grid-template-columns: 1.3fr repeat(4, 1fr) .7fr;
+      gap: 0;
+      font-size: 11.5px;
+      line-height: 1.35;
+      border-top: 1px solid var(--line);
+    }
+
+    .bg-ink .team-matrix {
+      border-top-color: var(--line-dk);
+    }
+
+    .tm-cell {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bg-ink .tm-cell {
+      border-bottom-color: var(--line-dk);
+    }
+
+    .tm-head {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .tm-name {
+      font-family: 'Fraunces', serif;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .tm-role-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: var(--amber);
+      color: var(--ink);
+      border-radius: 99px;
+      display: inline-block;
+    }
+
+    .dot-scale {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .dot-scale .d {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(27, 37, 60, .18);
+    }
+
+    .bg-ink .dot-scale .d {
+      background: rgba(245, 241, 232, .18);
+    }
+
+    .dot-scale .d.on {
+      background: var(--amber);
+    }
+
+    /* =============== SLIDE: Q&A =============== */
+    .qa-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 28px;
+    }
+
+    .qa-hero {
+      font-family: 'Fraunces', serif;
+      font-weight: 400;
+      font-size: clamp(90px, 11vw, 200px);
+      line-height: .9;
+      letter-spacing: -.04em;
+      font-variation-settings: "opsz" 144;
+    }
+
+    .qa-hero em {
+      font-style: italic;
+      font-weight: 300;
+      color: #F59E0B;
+    }
+
+    .qa-sub {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(22px, 2vw, 32px);
+      color: rgba(245, 241, 232, .65);
+      max-width: 720px;
+      line-height: 1.4;
+    }
+
+    .qa-emails {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      color: rgba(245, 241, 232, .55);
+      margin-top: 24px;
+    }
+
+    /* ======= Navigation ======= */
+    .nav {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(11, 18, 32, .75);
+      backdrop-filter: blur(12px);
+      padding: 10px 18px;
+      border-radius: 99px;
+      border: 1px solid rgba(245, 241, 232, .15);
+      z-index: 50;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .14em;
+      color: rgba(245, 241, 232, .7);
+    }
+
+    .nav button {
+      background: none;
+      border: none;
+      color: #F59E0B;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      padding: 4px 8px;
+      opacity: .85;
+      transition: opacity .2s;
+    }
+
+    .nav button:hover {
+      opacity: 1;
+    }
+
+    .nav .counter {
+      min-width: 64px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .nav .hint {
+      color: rgba(245, 241, 232, .4);
+      padding-left: 8px;
+      border-left: 1px solid rgba(245, 241, 232, .15);
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--amber);
+      z-index: 60;
+      transition: width .5s ease;
+    }
+
+    /* Print / fit */
+    @media (max-height: 720px) {
+      .frame {
+        inset: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="progress" id="progress"></div>
+
+  <div class="deck" id="deck">
+
+    <!-- ============ SLIDE 0: COVER ============ -->
+    <section class="slide bg-ink">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> E402 — NHÓM 01 · SPRINT 2 DELIVERABLE</div>
+          <div>22 · 04 · 2026</div>
+        </div>
+
+        <div class="cover-grid" style="flex:1;">
+          <div class="cover-left">
+            <div>
+              <div class="eyebrow reveal">Enterprise AI System Design</div>
+              <h1 class="cover-hero reveal-2" style="margin-top:28px;">
+                University<br>
+                Admission<span class="cover-dot"></span><br>
+                <em>&amp; Student</em><br>
+                Support Agent
+              </h1>
+            </div>
+
+            <div class="cover-meta reveal-3">
+              <div class="meta-block">
+                <div class="label">Scope</div>
+                <div class="val">3 interfaces · 1 AI Core</div>
+              </div>
+              <div class="meta-block">
+                <div class="label">Stage</div>
+                <div class="val">MVP → Production</div>
+              </div>
+              <div class="meta-block">
+                <div class="label">Delivery window</div>
+                <div class="val">T1 – T9, 2026</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cover-right">
+            <div class="eyebrow reveal-2" style="margin-bottom:20px;">Nhóm 1 · Phân vai</div>
+            <div class="cover-team reveal-3">
+              <div class="team-row">
+                <span class="team-role">Product Lead</span>
+                <span class="team-name">Trương Minh Tiền</span>
+                <span class="team-id">2A202600438</span>
+              </div>
+              <div class="team-row">
+                <span class="team-role">Presenter</span>
+                <span class="team-name">Phạm Đoàn Phương Anh</span>
+                <span class="team-id">2A202600257</span>
+              </div>
+              <div class="team-row">
+                <span class="team-role">Cost Lead</span>
+                <span class="team-name">Huỳnh Thái Bảo</span>
+                <span class="team-id">2A202600373</span>
+              </div>
+              <div class="team-row">
+                <span class="team-role">Architect</span>
+                <span class="team-name">Nguyễn Đức Dũng</span>
+                <span class="team-id">2A202600148</span>
+              </div>
+              <div class="team-row">
+                <span class="team-role">Reliability</span>
+                <span class="team-name">Nguyễn Đức Trí</span>
+                <span class="team-id">2A202600394</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>Confidential · Client Preview</span>
+          <span>COVER · 01/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 1: Project · User · Problem ============ -->
+    <section class="slide bg-paper">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> UNIVERSITY ADMISSION AGENT</div>
+          <div>§ 01 · PROJECT</div>
+        </div>
+
+        <div class="two-col">
+          <div class="col">
+            <div class="eyebrow reveal">§ 01 — Dự án · Người dùng · Bài toán</div>
+            <h2 class="section-title reveal-2" style="margin-top:16px;">
+              Một trợ lý, <br><em>ba cánh cửa</em> <br>đến với đại học F.
+            </h2>
+            <p class="lead reveal-3" style="margin-top:28px; max-width:480px;">
+              Chuyển đổi số phòng tuyển sinh và học vụ — từ giải pháp demo sang
+              một hệ thống doanh nghiệp chịu được mùa tuyển sinh có tải dạng spike.
+            </p>
+
+            <div class="problem-card reveal-4">
+              <div class="tag">Bài toán chính</div>
+              <div class="prompt">
+                Giảm tải cho phòng tuyển sinh, trả lời thí sinh &amp; phụ huynh trong vài giây —
+                nhưng <strong style="color:#F59E0B; font-style:normal; font-weight:500;">tuyệt đối không được
+                  bịa</strong> học phí, quy chế, hay hồ sơ.
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="eyebrow reveal-2">3 interface · 3 nhóm người dùng</div>
+            <div class="persona-stack">
+              <div class="persona reveal-3">
+                <div class="persona-num">01</div>
+                <div class="persona-body">
+                  <h3>Thí sinh &amp; Phụ huynh</h3>
+                  <p>Hỏi về ngành, học phí, điểm chuẩn, thủ tục. Hỏi nhiều, hỏi lặp,
+                    tập trung buổi tối và 2 tuần trước deadline — chiếm <strong>80%</strong> traffic.</p>
+                </div>
+              </div>
+              <div class="persona reveal-4">
+                <div class="persona-num">02</div>
+                <div class="persona-body">
+                  <h3>Sinh viên năm nhất</h3>
+                  <p>Onboarding, checklist nhập học, KTX, đăng ký môn. Đỉnh T8–T9,
+                    cần <strong>độ chính xác tuyệt đối</strong> vì câu hỏi thủ tục.</p>
+                </div>
+              </div>
+              <div class="persona reveal-5">
+                <div class="persona-num">03</div>
+                <div class="persona-body">
+                  <h3>Cán bộ tuyển sinh</h3>
+                  <p>Dashboard, funnel, text-to-SQL. Truy vấn ít nhưng phức tạp —
+                    chi phí thật nằm ở <strong>data crunching</strong>, không ở token.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>01 · PROJECT · USER · PROBLEM</span>
+          <span>02/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 2: Enterprise Context ============ -->
+    <section class="slide bg-cream">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> ENTERPRISE CONTEXT</div>
+          <div>§ 02 · CONSTRAINTS</div>
+        </div>
+
+        <div class="reveal">
+          <div class="eyebrow">§ 02 — Bối cảnh enterprise &amp; ràng buộc</div>
+          <h2 class="section-title" style="margin-top:14px; max-width:820px;">
+            Vì sao deploy demo <em>và</em> deploy enterprise <br>là hai bài toán khác nhau.
+          </h2>
+        </div>
+
+        <div class="constraints">
+          <div class="constraint reveal-2">
+            <div class="idx">01</div>
+            <h3>High Availability<br>&amp; Scalability</h3>
+            <p>Zero-downtime tolerance mùa cao điểm. Chịu được traffic dạng spike
+              từ ~1,000 req/ngày thường lên <strong>~12,000 req/ngày</strong> trong 2 tuần trước deadline.</p>
+            <span class="pill">Spike · Elastic</span>
+          </div>
+          <div class="constraint reveal-3">
+            <div class="idx">02</div>
+            <h3>Accuracy<br>&amp; Auditability</h3>
+            <p>Bot không được hallucinate về học phí hay quy chế. Mọi câu trả lời
+              phải có <strong>trích dẫn nguồn</strong> và log 100% để đối soát khi có khiếu nại.</p>
+            <span class="pill">Zero-hallucination</span>
+          </div>
+          <div class="constraint reveal-4">
+            <div class="idx">03</div>
+            <h3>Data<br>Privacy</h3>
+            <p>Dữ liệu có PII: CCCD, điểm thi THPT, học bạ. Phải
+              <strong>masking</strong> trước khi đẩy text sang LLM provider (OpenAI, Google).
+            </p>
+            <span class="pill">PII · RBAC · Audit</span>
+          </div>
+        </div>
+
+        <div class="choice-row reveal-5">
+          <div>
+            <div class="choice-label">Quyết định hạ tầng</div>
+            <div class="choice-head">Cloud-native, <em>không</em> hybrid.</div>
+          </div>
+          <div>
+            <p class="body txt-muted" style="line-height:1.6;">
+              <strong style="color:var(--ink);">Elasticity</strong> cho phép auto-scaling từ 1 → 100 server trong vài
+              phút để hứng đợt sóng ngày công bố điểm — rồi thu hẹp lại khi qua mùa.
+              <strong style="color:var(--ink);"> Pay-as-you-go</strong> chuyển hàng tỷ đồng CapEx thành OpEx linh hoạt:
+              không phải mua máy chủ vật lý chỉ để phục vụ 2 tháng/năm rồi bỏ không 10 tháng còn lại.
+            </p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>02 · ENTERPRISE CONTEXT &amp; CONSTRAINTS</span>
+          <span>03/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 3: Architecture ============ -->
+    <section class="slide bg-ink">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> ARCHITECTURE · PROPOSED DEPLOYMENT</div>
+          <div>§ 03 · STACK</div>
+        </div>
+
+        <div class="reveal">
+          <div class="eyebrow">§ 03 — Kiến trúc triển khai đề xuất</div>
+          <h2 class="section-title" style="margin-top:14px; color:var(--paper); max-width:900px;">
+            Bốn UI độc lập, <em>một AI Core</em> <br>bốn tầng inference — Cloud API + Local.
+          </h2>
+        </div>
+
+        <div class="arch-canvas">
+          <div class="ui-row reveal-2">
+            <div class="ui-card">
+              <span class="ui-tag">80% traffic</span>
+              <h4>Thí sinh UI</h4>
+              <p>Realtime chat · ưu tiên cache</p>
+            </div>
+            <div class="ui-card">
+              <span class="ui-tag">10% traffic</span>
+              <h4>SV năm nhất UI</h4>
+              <p>Checklist · notification · async</p>
+            </div>
+            <div class="ui-card">
+              <span class="ui-tag">5% traffic</span>
+              <h4>Cán bộ UI</h4>
+              <p>Dashboard · text-to-SQL · batch</p>
+            </div>
+            <div class="ui-card">
+              <span class="ui-tag">5% traffic</span>
+              <h4>IT Helpdesk</h4>
+              <p>Monitoring · token ops</p>
+            </div>
+          </div>
+
+          <div class="connectors reveal-3">
+            <span></span><span></span><span></span><span></span>
+          </div>
+
+          <div class="ai-core reveal-3">
+            <div>
+              <div class="label">Shared AI Core</div>
+              <h4>LLM + RAG + Knowledge Base + Data</h4>
+            </div>
+            <div class="chips">
+              <span class="chip local">Local · Qwen 7B · baseline 5%</span>
+              <span class="chip primary">GPT-5.4 mini · primary 75%</span>
+              <span class="chip">GPT-5.4 · escalation 15%</span>
+              <span class="chip">Gemini 3.1 · fallback 5%</span>
+            </div>
+          </div>
+
+          <div class="data-row reveal-4">
+            <div>
+              <h5>Retrieval · <em>Vertex AI Embeddings</em></h5>
+              <p>MVP: PostgreSQL + pgvector. Production: AlloyDB + vector (HA, backup, failover).</p>
+            </div>
+            <div>
+              <h5>Runtime · <em>Cloud Run + On-prem GPU</em></h5>
+              <p>Cloud Run autoscale cho cloud API. On-prem RTX 4090 chạy Qwen 7B cho baseline idle + PII.</p>
+            </div>
+            <div>
+              <h5>Security · <em>DLP + RBAC + Audit</em></h5>
+              <p>PII masking trước LLM. Cloud Logging + BigQuery cho audit. Encryption toàn tuyến.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>03 · PROPOSED ARCHITECTURE</span>
+          <span>04/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 4: Local Tier — 4-Tier Routing ============ -->
+    <section class="slide bg-cream">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> ARCHITECTURE · LOCAL TIER</div>
+          <div>§ 03 · 4-TIER ROUTING</div>
+        </div>
+
+        <div class="reveal">
+          <div class="eyebrow">§ 03 (tiếp) — Bổ sung tầng 4: Local inference</div>
+          <h2 class="section-title" style="margin-top:14px; max-width:980px;">
+            Từ ba tầng thành <em>bốn</em> — thêm Local <br>để gánh idle time, PII &amp; disaster recovery.
+          </h2>
+        </div>
+
+        <div class="tier-row reveal-2">
+          <div class="tier tier-local">
+            <div class="tier-badge">Tier 0 · Local · mới</div>
+            <h3>Qwen 2.5 7B Instruct <em>GGUF Q4 · On-prem · RTX 4090 24GB</em></h3>
+            <div class="tier-traffic">~5% traffic · chi phí cố định</div>
+            <ul>
+              <li>Idle-time FAQ (26/30 ngày)</li>
+              <li>Câu hỏi có PII (CCCD, điểm, hồ sơ)</li>
+              <li>Deepest fallback khi cloud down</li>
+              <li>Alternative: PhoGPT-4B trên RTX 3090</li>
+            </ul>
+            <div class="tier-cost">$83 – $125 / tháng (±20%)</div>
+          </div>
+          <div class="tier">
+            <div class="tier-badge">Tier 1 · Primary</div>
+            <h3>GPT-5.4 mini <em>Cloud API · pay-per-token</em></h3>
+            <div class="tier-traffic">75% traffic · peak hours</div>
+            <ul>
+              <li>FAQ chính trong giờ peak</li>
+              <li>Realtime chat (cache-miss)</li>
+              <li>Khi local confidence &lt; 0.75</li>
+            </ul>
+            <div class="tier-cost">$27 – $41 / tháng</div>
+          </div>
+          <div class="tier">
+            <div class="tier-badge">Tier 2 · Escalation</div>
+            <h3>GPT-5.4 Standard <em>Cloud API · reasoning sâu</em></h3>
+            <div class="tier-traffic">15% traffic</div>
+            <ul>
+              <li>Compliance / adversarial</li>
+              <li>Tư vấn tài chính, soát hồ sơ</li>
+              <li>Whitelist keyword bắt buộc</li>
+            </ul>
+            <div class="tier-cost">$91 – $137 / tháng</div>
+          </div>
+          <div class="tier">
+            <div class="tier-badge">Tier 3 · Fallback</div>
+            <h3>Gemini 3.1 <em>Cloud API · multi-provider</em></h3>
+            <div class="tier-traffic">5% traffic · khi cần</div>
+            <ul>
+              <li>GPT overload / timeout</li>
+              <li>Multi-LLM routing</li>
+              <li>Circuit breaker kích hoạt</li>
+            </ul>
+            <div class="tier-cost">$12 – $18 / tháng</div>
+          </div>
+        </div>
+
+        <div class="local-reasons reveal-3">
+          <div class="reason">
+            <div class="reason-num">01</div>
+            <h4>Idle Economy</h4>
+            <p>26/30 ngày hệ thống chỉ ~1,000 req/ngày. Local xử lý baseline hoàn toàn — không phụ thuộc scale của cloud
+              API, trường giữ quyền kiểm soát đỉnh nhàn rỗi.</p>
+          </div>
+          <div class="reason">
+            <div class="reason-num">02</div>
+            <h4>Privacy-first PII</h4>
+            <p>Câu hỏi có CCCD / điểm thi / học bạ xử lý hoàn toàn trong biên giới tổ chức — raw PII không bao giờ gửi
+              đến OpenAI hay Google, đạt chuẩn bảo vệ dữ liệu Bộ GD&amp;ĐT.</p>
+          </div>
+          <div class="reason">
+            <div class="reason-num">03</div>
+            <h4>Disaster Recovery</h4>
+            <p>Khi OpenAI + Google cùng down (từng xảy ra tháng 06/2024), hệ thống vẫn online. Local là "Tier 2 Degraded
+              Mode" trước khi rơi về menu rule-based tĩnh.</p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>03 · ARCHITECTURE · 4-TIER ROUTING</span>
+          <span>05/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 4: Cost Anatomy ============ -->
+    <section class="slide bg-paper">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> COST ANATOMY</div>
+          <div>§ 04 · FINANCE</div>
+        </div>
+
+        <div class="reveal" style="margin-bottom:24px;">
+          <div class="eyebrow">§ 04 — Cost anatomy</div>
+          <h2 class="section-title" style="margin-top:14px;">
+            Chi phí <em>bốn tầng</em> tháng cao điểm — <br>API biến đổi + Local cố định.
+          </h2>
+        </div>
+
+        <div class="cost-split">
+          <div class="col reveal-2">
+            <div class="cost-hero-num">
+              $<em>266</em><span class="unit">/tháng</span>
+            </div>
+            <div class="cost-range">
+              ±20% · $213 – $319 · API $132–$198 + Local $83–$125
+            </div>
+
+            <div class="insight-card" style="margin-top:30px;">
+              <div class="label">Insight then chốt</div>
+              <h4>
+                Layer <em style="font-style:italic; color:#F59E0B;">Escalation</em> chỉ chiếm
+                <strong>15% traffic</strong> nhưng ăn <strong>70% cost API.</strong>
+                Local tier mới đảo trục chi phí — <em style="font-style:italic; color:#86EFAC;">fixed</em>, không scale
+                theo token.
+              </h4>
+            </div>
+
+            <table class="breakdown-table" style="margin-top:24px;">
+              <thead>
+                <tr>
+                  <th>Volume/tháng</th>
+                  <th>Tokens (API)</th>
+                  <th class="amount">Cost ±20%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>74,000 req</td>
+                  <td>203.9M</td>
+                  <td class="amount">$132 – $198</td>
+                </tr>
+                <tr>
+                  <td>+ Local on-prem</td>
+                  <td>fixed</td>
+                  <td class="amount" style="color:var(--forest);">$83 – $125</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="col reveal-3">
+            <div class="bar-chart">
+              <h4>Phân rã 4 layer model</h4>
+
+              <div class="bar-row">
+                <div class="bar-head">
+                  <span class="name" style="color:var(--forest);">Local · Qwen 7B <em>5% traffic · fixed
+                      cost</em></span>
+                  <span class="cost" style="color:var(--forest);">$83 – $125 · on-prem</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:100%; background:linear-gradient(90deg,#5FB88F,#166534);"></div>
+                </div>
+              </div>
+
+              <div class="bar-row">
+                <div class="bar-head">
+                  <span class="name">GPT-5.4 mini <em>75% traffic</em></span>
+                  <span class="cost">$27.30 – $40.96 · 21% cost</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill mini" style="width:21%;"></div>
+                </div>
+              </div>
+
+              <div class="bar-row">
+                <div class="bar-head">
+                  <span class="name" style="color:var(--amber);">GPT-5.4 Escalation <em>15% traffic</em></span>
+                  <span class="cost" style="color:var(--amber);">$91.02 – $136.52 · 70% cost</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:70%;"></div>
+                </div>
+              </div>
+
+              <div class="bar-row">
+                <div class="bar-head">
+                  <span class="name">Gemini 3.1 Fallback <em>5% traffic</em></span>
+                  <span class="cost">$12.00 – $18.00 · 9% cost</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill fallback" style="width:9%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <table class="breakdown-table" style="margin-top:24px;">
+              <thead>
+                <tr>
+                  <th>Cost layer</th>
+                  <th>MVP gốc</th>
+                  <th class="amount">±20%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Token API (cloud)</td>
+                  <td>$95 – $195</td>
+                  <td class="amount">$76 – $234</td>
+                </tr>
+                <tr style="background:rgba(22,101,52,.06);">
+                  <td><strong style="color:var(--forest);">Local inference (on-prem)</strong></td>
+                  <td>$104 fix</td>
+                  <td class="amount" style="color:var(--forest);">$83 – $125</td>
+                </tr>
+                <tr>
+                  <td>Compute (Cloud Run + VPC)</td>
+                  <td>$85 – $130</td>
+                  <td class="amount">$68 – $156</td>
+                </tr>
+                <tr>
+                  <td>Vector DB · AlloyDB HA</td>
+                  <td>$40 – $70</td>
+                  <td class="amount">$32 – $84</td>
+                </tr>
+                <tr>
+                  <td>Logging · Audit · BigQuery</td>
+                  <td>$25 – $55</td>
+                  <td class="amount">$20 – $66</td>
+                </tr>
+                <tr>
+                  <td>Monitoring</td>
+                  <td>$15 – $35</td>
+                  <td class="amount">$12 – $42</td>
+                </tr>
+                <tr>
+                  <td>Human Review</td>
+                  <td>$150 – $350+</td>
+                  <td class="amount">$120 – $420+</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>04 · COST ANATOMY</span>
+          <span>06/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 5: Cost Optimization ============ -->
+    <section class="slide bg-cream">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> COST OPTIMIZATION</div>
+          <div>§ 05 · LEVERS</div>
+        </div>
+
+        <div class="reveal">
+          <div class="eyebrow">§ 05 — Cost optimization</div>
+          <h2 class="section-title" style="margin-top:14px; max-width:900px;">
+            Ba đòn bẩy, hai sóng — <em>không</em> chạm đường câu nhạy cảm.
+          </h2>
+        </div>
+
+        <div class="strategies">
+          <div class="strategy p0 reveal-2">
+            <span class="prio">P0 · Làm ngay</span>
+            <h3>Semantic Caching <em>Top-100 FAQ · TTL 24h · bind kb_version</em></h3>
+            <div class="savings">↓ Tiết kiệm $12 – $24 / tháng</div>
+            <p>Top 100–200 FAQ cover 40–60% câu hỏi UI Thí sinh. Cache hit → phản hồi &lt;200ms,
+              giải quyết luôn ràng buộc "phản hồi ngay" của enterprise.</p>
+            <div class="owner">Owner · Bảo + Dũng · 1–2 ngày</div>
+          </div>
+
+          <div class="strategy p0 reveal-3">
+            <span class="prio">P0 · Làm ngay</span>
+            <h3>Tiered Routing Tighten <em>Siết escalation 15% → 8%</em></h3>
+            <div class="savings">↓ Tiết kiệm $40 – $66 / tháng</div>
+            <p>Intent classifier rẻ phân câu thành {simple_faq, personal_record, compliance, complex_reasoning}.
+              Chỉ escalate GPT-5.4 khi thật sự cần — whitelist keyword quy chế/khiếu nại/CCCD luôn escalate.</p>
+            <div class="owner">Owner · Dũng + Bảo · 2–3 ngày</div>
+          </div>
+
+          <div class="strategy p1 reveal-4">
+            <span class="prio" style="background:var(--sky);">P1 · Làm sau</span>
+            <h3>Selective Inference <em>Phân tầng SLA theo UI</em></h3>
+            <div class="savings">↓ Tiết kiệm $12 – $30 / tháng</div>
+            <p>UI Thí sinh (sync, cache-first) ≠ UI SV (async, batch) ≠ UI Cán bộ (aggregate daily).
+              Cần queue + worker; phụ thuộc Product chốt SLA rõ ràng từng UI.</p>
+            <div class="owner">Owner · Tiền + Dũng · Phase 2</div>
+          </div>
+        </div>
+
+        <div class="savings-total reveal-5">
+          <div>
+            <div class="eyebrow" style="color:#F59E0B; margin-bottom:6px;">Tổng tiết kiệm hai đòn bẩy P0</div>
+            <div class="lead">Trên tổng $132 – $198 /tháng cost token ⇒ giảm ~30–45% cost token</div>
+          </div>
+          <div class="big">$52 – $90 <em>/ tháng</em></div>
+        </div>
+
+        <div class="footer">
+          <span>05 · COST OPTIMIZATION</span>
+          <span>07/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 6: Reliability & Scaling ============ -->
+    <section class="slide bg-ink">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> RELIABILITY &amp; SCALING</div>
+          <div>§ 06 · INCIDENT RESPONSE</div>
+        </div>
+
+        <div class="reveal">
+          <div class="eyebrow">§ 06 — Reliability &amp; scaling</div>
+          <h2 class="section-title" style="margin-top:14px; color:var(--paper); max-width:900px;">
+            Ba tình huống — <em>ba playbook</em> <br>để không bao giờ im lặng.
+          </h2>
+        </div>
+
+        <div class="incidents">
+          <div class="incident reveal-2">
+            <div class="case-num">Case 01</div>
+            <h3>Traffic tăng<br>đột biến</h3>
+            <div class="incident-section">
+              <div class="k">Ngắn hạn</div>
+              <div class="v">Rate limiting · Auto-scale workers · Đẩy vào queue.</div>
+            </div>
+            <div class="incident-section">
+              <div class="k">Dài hạn</div>
+              <div class="v">Semantic caching cắt trước 30–50% call.</div>
+            </div>
+            <div class="incident-section">
+              <div class="k">Metrics</div>
+              <div class="metric-pills">
+                <span class="metric-pill">Queue Depth</span>
+                <span class="metric-pill">RPS</span>
+                <span class="metric-pill">Active Workers</span>
+              </div>
+            </div>
+            <div class="incident-section" style="margin-top:auto;">
+              <div class="k">Fallback</div>
+              <div class="v">Queue &gt; 1000 → Async Mode: thu email/SĐT, SMS/Zalo trong 5 phút.</div>
+            </div>
+          </div>
+
+          <div class="incident reveal-3">
+            <div class="case-num">Case 02</div>
+            <h3>Provider<br>timeout</h3>
+            <div class="incident-section">
+              <div class="k">Ngắn hạn</div>
+              <div class="v">Mở Circuit Breaker · Thông báo "đang bảo trì" cho user.</div>
+            </div>
+            <div class="incident-section">
+              <div class="k">Dài hạn</div>
+              <div class="v">Multi-LLM routing tự chuyển sang provider dự phòng.</div>
+            </div>
+            <div class="incident-section">
+              <div class="k">Metrics</div>
+              <div class="metric-pills">
+                <span class="metric-pill">Error Rate</span>
+                <span class="metric-pill">Breaker Status</span>
+                <span class="metric-pill">Fallback Rate</span>
+              </div>
+            </div>
+            <div class="incident-section" style="margin-top:auto;">
+              <div class="k">Fallback · Degraded Mode</div>
+              <div class="v">Tầng 1: OpenAI → Google. Tầng 2: đóng ô chat, hiện menu rule-based 10 FAQ tĩnh.</div>
+            </div>
+          </div>
+
+          <div class="incident reveal-4">
+            <div class="case-num">Case 03</div>
+            <h3>Response<br>chậm</h3>
+            <div class="incident-section">
+              <div class="k">Ngắn hạn</div>
+              <div class="v">Bật Streaming API · hiển thị "Bot đang đọc tài liệu…".</div>
+            </div>
+            <div class="incident-section">
+              <div class="k">Dài hạn</div>
+              <div class="v">Tối ưu context window · Dùng Flash cho task đơn giản.</div>
+            </div>
+            <div class="incident-section">
+              <div class="k">Metrics</div>
+              <div class="metric-pills">
+                <span class="metric-pill">P95/P99 Latency</span>
+                <span class="metric-pill">Retry Rate</span>
+                <span class="metric-pill">Abandonment</span>
+              </div>
+            </div>
+            <div class="incident-section" style="margin-top:auto;">
+              <div class="k">Fallback · Short-circuit</div>
+              <div class="v">Timeout cứng 8s → cắt LLM, trả template an toàn + link cẩm nang.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>06 · RELIABILITY &amp; SCALING</span>
+          <span>08/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 7: Track & Next Steps ============ -->
+    <section class="slide bg-paper">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> TRACK &amp; NEXT STEPS</div>
+          <div>§ 07 · ROADMAP</div>
+        </div>
+
+        <div class="reveal">
+          <div class="eyebrow">§ 07 — Track đề xuất &amp; bước đi tiếp theo</div>
+          <h2 class="section-title" style="margin-top:14px; max-width:900px;">
+            Từ MVP đến mùa tuyển sinh <em>2027</em> — một lộ trình, năm chủ sở hữu.
+          </h2>
+        </div>
+
+        <div class="roadmap">
+          <div></div>
+
+          <div class="timeline reveal-2">
+            <div class="tl-step done">
+              <div class="node">✓</div>
+              <div class="when">Sprint 1 · Đã hoàn tất</div>
+              <h3>Thiết kế &amp; định giá</h3>
+              <ul>
+                <li>5 worksheets hoàn thiện</li>
+                <li>Architecture SPEC + cost model ±20%</li>
+                <li>3 chiến lược optimization + 3 incident playbook</li>
+              </ul>
+            </div>
+            <div class="tl-step">
+              <div class="node">P0</div>
+              <div class="when">Tuần 1–2 · Phase MVP</div>
+              <h3>Build &amp; hardening</h3>
+              <ul>
+                <li>Semantic caching top-100 FAQ</li>
+                <li>Tiered routing + whitelist compliance</li>
+                <li>PII masking DLP + audit log pipeline</li>
+                <li>Soft-launch với 50 sinh viên volunteer</li>
+              </ul>
+            </div>
+            <div class="tl-step">
+              <div class="node">P1</div>
+              <div class="when">Tháng 2+ · Phase 2</div>
+              <h3>Scale &amp; observability</h3>
+              <ul>
+                <li>Selective inference + queue async UI Cán bộ</li>
+                <li>Triển khai Langfuse/Helicone observability</li>
+                <li>Chuyển sang AlloyDB HA cho mùa cao điểm T5–T6</li>
+                <li>Load test cho 12,000 req/ngày đỉnh</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="reveal-3">
+            <div class="eyebrow" style="margin-bottom:10px;">Phân vai Phase 2 · 5 owner đã chốt</div>
+            <div class="team-matrix">
+              <div class="tm-cell tm-head">Thành viên</div>
+              <div class="tm-cell tm-head">Product</div>
+              <div class="tm-cell tm-head">Infra/Ops</div>
+              <div class="tm-cell tm-head">AI Eng</div>
+              <div class="tm-cell tm-head">Track Phase 2</div>
+              <div class="tm-cell tm-head">Kỹ năng bù</div>
+
+              <div class="tm-cell tm-name">Phương Anh</div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d on"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="tm-role-pill">Product Lead · UX</span></div>
+              <div class="tm-cell txt-muted">RAG, Conversational UX</div>
+
+              <div class="tm-cell tm-name">Minh Tiền</div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d on"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="tm-role-pill">PM · Strategy</span></div>
+              <div class="tm-cell txt-muted">Cost vs performance</div>
+
+              <div class="tm-cell tm-name">Thái Bảo</div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d on"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="tm-role-pill">FinOps · Cost</span></div>
+              <div class="tm-cell txt-muted">Cloud pricing, scaling</div>
+
+              <div class="tm-cell tm-name">Đức Dũng</div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d on"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d on"></span></span></div>
+              <div class="tm-cell"><span class="tm-role-pill">Architect · Backend</span></div>
+              <div class="tm-cell txt-muted">AI pipeline, security</div>
+
+              <div class="tm-cell tm-name">Trí Thức</div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d on"></span><span
+                    class="d on"></span></span></div>
+              <div class="tm-cell"><span class="dot-scale"><span class="d on"></span><span class="d"></span><span
+                    class="d"></span></span></div>
+              <div class="tm-cell"><span class="tm-role-pill">SRE · Reliability</span></div>
+              <div class="tm-cell txt-muted">Logging, load testing</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>07 · TRACK &amp; NEXT STEPS</span>
+          <span>09/10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 8: Q&A ============ -->
+    <section class="slide bg-ink">
+      <div class="frame">
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span> END OF PRESENTATION</div>
+          <div>Q&amp;A · DISCUSSION</div>
+        </div>
+
+        <div class="qa-wrap">
+          <div class="qa-hero reveal">Cảm <em>ơn.</em></div>
+          <div class="qa-sub reveal-2">
+            Sẵn sàng trả lời mọi câu hỏi về kiến trúc, cost model, hoặc lộ trình đưa hệ thống vào mùa tuyển sinh 2026.
+          </div>
+          <div class="qa-emails reveal-3">
+            <span>marcuschill1823@gmail.com</span>
+            <span>·</span>
+            <span>thaibao1172004@gmail.com</span>
+            <span>·</span>
+            <span>adung2912d03@gmail.com</span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>UNIVERSITY ADMISSION &amp; STUDENT SUPPORT AGENT · NHÓM 01</span>
+          <span>10/10</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <button id="prev" aria-label="Previous slide">◂</button>
+    <span class="counter" id="counter">01 / 09</span>
+    <button id="next" aria-label="Next slide">▸</button>
+    <span class="hint">← → · SPACE · F = fullscreen</span>
+  </nav>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const counter = document.getElementById('counter');
+    const progress = document.getElementById('progress');
+    let idx = 0;
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+      counter.textContent = `${pad(idx + 1)} / ${pad(slides.length)}`;
+      progress.style.width = `${((idx + 1) / slides.length) * 100}%`;
+    }
+    function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); render(); }
+    function next() { go(idx + 1); }
+    function prev() { go(idx - 1); }
+
+    document.getElementById('next').addEventListener('click', next);
+    document.getElementById('prev').addEventListener('click', prev);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(slides.length - 1); }
+      else if (e.key.toLowerCase() === 'f') {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+
+    // Touch swipe
+    let touchX = null;
+    document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
+      touchX = null;
+    });
+
+    render();
+  </script>
+
+</body>
+
+</html>
