@@ -23,6 +23,17 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+# Bridge Streamlit Cloud secrets -> os.environ so downstream libs (openai, etc.)
+# pick them up. Must run BEFORE importing MainAgent (which constructs the LLM
+# client at import time via its dependencies).
+for _k in ("OPENAI_API_KEY", "COST_PER_1K_TOKENS"):
+    try:
+        if _k in st.secrets and not os.getenv(_k):
+            os.environ[_k] = str(st.secrets[_k])
+    except (FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
+        # Local run without secrets.toml — fine, env vars will be used.
+        break
+
 from agent.main_agent import MainAgent
 # main_agent inserts simple-rag into sys.path on import, so this works after it.
 from rag.prompt import ANSWER_PROMPT  # noqa: E402
@@ -30,6 +41,45 @@ from rag.prompt import ANSWER_PROMPT  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parent
 REPORTS_DIR = REPO_ROOT / "reports"
 COST_PER_1K_TOKENS = float(os.getenv("COST_PER_1K_TOKENS", "0.002"))
+MAX_QUERIES_PER_SESSION = int(os.getenv("MAX_QUERIES_PER_SESSION", "20"))
+
+
+def _get_secret(key: str, default: str = "") -> str:
+    """Read from st.secrets first, fall back to env var. Safe when no secrets file."""
+    try:
+        if key in st.secrets:
+            return str(st.secrets[key])
+    except (FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
+        pass
+    return os.getenv(key, default)
+
+
+def password_gate() -> None:
+    """Block the app behind a shared password if APP_PASSWORD secret is set.
+
+    If no password is configured, the gate is a no-op (open access).
+    """
+    expected = _get_secret("APP_PASSWORD")
+    if not expected:
+        return
+    if st.session_state.get("_auth_ok"):
+        return
+
+    st.markdown(
+        "<h2 style='text-align:center;margin-top:80px;'>🔒 AI Eval Factory</h2>"
+        "<p style='text-align:center;color:#94a3b8;'>Nhập password để truy cập demo.</p>",
+        unsafe_allow_html=True,
+    )
+    with st.form("auth_form", clear_on_submit=False):
+        pwd = st.text_input("Password", type="password", label_visibility="collapsed")
+        ok = st.form_submit_button("Vào")
+    if ok:
+        if pwd == expected:
+            st.session_state["_auth_ok"] = True
+            st.rerun()
+        else:
+            st.error("Sai password.")
+    st.stop()
 
 
 # ---------------------------------------------------------------------------
@@ -277,6 +327,7 @@ def compute_timeseries(records: List[Dict]) -> Dict[str, List]:
 # UI
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="AI Eval Factory — Lab 14", layout="wide")
+password_gate()
 
 st.markdown(
     """
@@ -1037,8 +1088,20 @@ with col_chat:
                     with st.expander("🧬 Raw stages (JSON)", expanded=False):
                         st.json(tr["stages"])
 
+    used = st.session_state.session_metrics["queries"]
+    remaining = max(0, MAX_QUERIES_PER_SESSION - used)
+    if remaining <= 3:
+        st.caption(f"⚠️ Còn {remaining}/{MAX_QUERIES_PER_SESSION} câu hỏi cho session này.")
+
     question = st.chat_input("Hỏi về tuyển sinh, quy chế học vụ, hoặc hồ sơ nhập học...")
     if question:
+        if remaining <= 0:
+            st.error(
+                f"Đã đạt giới hạn {MAX_QUERIES_PER_SESSION} câu hỏi/session. "
+                "Reload trang để bắt đầu session mới."
+            )
+            st.stop()
+
         st.session_state.messages.append({"role": "user", "content": question})
         with st.chat_message("user"):
             st.markdown(question)
