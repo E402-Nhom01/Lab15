@@ -1,6 +1,16 @@
 # Lab15 - AI Evaluation Factory
 
-Hệ thống benchmark Agent RAG theo hướng "Evaluation Factory", dùng để so sánh chất lượng giữa hai phiên bản `v1` và `v2` bằng các nhóm chỉ số:
+## Mô Tả Ngắn Dự Án
+Bài toán theo **Worksheet 0 - Scenario Card** với bối cảnh hệ thống `University Admission & Student Support Agent`.
+
+Hệ thống phục vụ 3 nhóm người dùng chính:
+- `Thí sinh`: tìm hiểu thông tin và đăng ký tuyển sinh.
+- `Sinh viên năm nhất`: hỗ trợ nhập học và onboarding.
+- `Cán bộ tuyển sinh`: theo dõi, phân tích và tối ưu kết quả tuyển sinh.
+
+Về kiến trúc logic, có 4 giao diện độc lập (`Thí sinh UI`, `SV năm nhất UI`, `Cán bộ UI`, `IT Helpdesk UI`) dùng chung một AI Core (`LLM + RAG + Data`). Dữ liệu chính gồm FAQ tuyển sinh, quy định đào tạo, biểu mẫu và dữ liệu hồ sơ ứng viên. Hệ thống tích hợp các năng lực như Knowledge Base, RAG, Timeline/Recommendation Engine, Predictive Model, State Tracking, Notification, Data Analytics và Text-to-SQL.
+
+Thừa kế từ hệ thống benchmark Agent RAG theo hướng "Evaluation Factory", dùng để so sánh chất lượng giữa hai phiên bản `v1` và `v2` bằng các nhóm chỉ số:
 - Retrieval: `hit_rate`, `MRR`
 - Chất lượng trả lời: Multi-Judge (`gpt-4o` + `gpt-4o-mini`)
 - Độ tin cậy: `faithfulness`, `relevancy`
@@ -19,12 +29,6 @@ Gợi ý xem nhanh:
 ### Ảnh Demo
 ![Demo screen 1](slide/demo_1.png)
 ![Demo screen 2](slide/demo_2.png)
-
-## Mô Tả Ngắn Dự Án
-Project tập trung vào việc trả lời câu hỏi học vụ từ tài liệu PDF chính sách học thuật, đồng thời cung cấp bộ khung đánh giá tự động để:
-- Chạy benchmark trên cùng một bộ câu hỏi chuẩn (`golden_set`)
-- So sánh công bằng giữa `v1` và `v2`
-- Ra quyết định release/rollback dựa trên ngưỡng chất lượng và hiệu năng
 
 ## Kiến Trúc Hệ Thống
 ```mermaid
