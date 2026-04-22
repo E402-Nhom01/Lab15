@@ -18,6 +18,7 @@ Thừa kế từ hệ thống benchmark Agent RAG theo hướng "Evaluation Fact
 
 ## Demo
 - Ứng dụng Streamlit: [https://lab15-demo.streamlit.app/](https://lab15-demo.streamlit.app/)
+- Password: >! lab15-20KAI !<
 
 ## Preview Slide Của Team
 - Slide HTML: [slide/E402_Nhom1_Presentation_1.html](slide/E402_Nhom1_Presentation_1.html)
